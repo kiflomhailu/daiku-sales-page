@@ -22,6 +22,10 @@ import mowerFeature from './assets/used_images/4.png'
 import mowerInUse from './assets/used_images/5.png'
 import kitOutside from './assets/used_images/7.png'
 import sprayerOutside from './assets/used_images/8.png'
+import best1 from './assets/best1.jpg'
+import best1Inuse from './assets/best1-inuse.jpg'
+import best1InuseMale from './assets/best1-inuse-male.jpg'
+import best1InuseReal from './assets/best1-inuse-real.jpg'
 
 const categories = [
   {
@@ -50,23 +54,14 @@ const categories = [
   },
 ]
 
+function getDiscountPercent(price, oldPrice) {
+  const current = Number.parseFloat(price.replace(/[^\d.]/g, ''))
+  const original = Number.parseFloat(oldPrice.replace(/[^\d.]/g, ''))
+  if (!current || !original || original <= current) return 0
+  return Math.round((1 - current / original) * 100)
+}
+
 const products = [
-  {
-    name: 'DAIKU 20V Impact Drill Pro',
-    tag: 'Bestseller',
-    rating: '5.0',
-    price: 'EUR 129',
-    oldPrice: 'EUR 169',
-    accent: 'lime',
-    image: daikuPruner,
-    views: [
-      { label: 'Outside', image: kitOutside },
-      { label: 'Inside', image: kitInside },
-      { label: 'In use', image: sawCategory },
-    ],
-    spec: 'Share+ 20V system',
-    saving: 'Save EUR 40',
-  },
   {
     name: 'DAIKU Cordless Lawn Mower 40V',
     tag: 'New',
@@ -74,14 +69,27 @@ const products = [
     price: 'EUR 499',
     oldPrice: 'EUR 589',
     accent: 'green',
-    image: mowerProduct,
+    image: best1,
     views: [
-      { label: 'Outside', image: mowerOutside },
-      { label: 'Inside', image: mowerFeature },
-      { label: 'In use', image: mowerInUse },
+      { label: 'Outside', image: best1 },
+      { label: 'Inside', image: best1InuseMale },
+      { label: 'In use', image: best1InuseReal },
     ],
     spec: 'Brushless motor',
     saving: 'Save EUR 90',
+  },
+  {
+    name: 'DAIKU 20V Impact Drill Pro',
+    tag: 'Bestseller',
+    rating: '5.0',
+    price: 'EUR 129',
+    oldPrice: 'EUR 169',
+    accent: 'lime',
+    cardStyle: 'wuber',
+    outsideImage: best1,
+    insideImage: best1Inuse,
+    spec: 'Share+ 20V system',
+    saving: 'Save EUR 40',
   },
   {
     name: 'DAIKU Garden Pressure Sprayer',
@@ -263,6 +271,48 @@ const projectCards = [
   },
 ]
 
+function WuberStyleProductCard({ product }) {
+  const discount = getDiscountPercent(product.price, product.oldPrice)
+
+  return (
+    <article className="product-card product-card--wuber">
+      <button type="button" className="wishlist-btn" aria-label="Add to wishlist">
+        <span aria-hidden="true">♡</span>
+      </button>
+
+      <div className="wuber-media">
+        {discount > 0 && <span className="discount-badge">-{discount}%</span>}
+        <div className={`wuber-visual ${product.accent}`}>
+          <img
+            className="product-img primary-img"
+            src={product.outsideImage}
+            alt={product.name}
+          />
+          <img
+            className="product-img hover-img"
+            src={product.insideImage}
+            alt={`${product.name} in use`}
+          />
+        </div>
+      </div>
+
+      <h3>{product.name}</h3>
+      <div className="wuber-price-line">
+        <span className="old-price">{product.oldPrice}</span>
+        <strong>{product.price}</strong>
+      </div>
+      <p className="wuber-legal">
+        Regular price {product.oldPrice} <strong>-{discount}%</strong>
+      </p>
+      <p className="wuber-legal">
+        Lowest price 30 days: {product.oldPrice} <strong>-{discount}%</strong>
+      </p>
+      <p className="product-spec">{product.spec}</p>
+      <button type="button">Add to cart</button>
+    </article>
+  )
+}
+
 function SimpleHoverProductCard({ product }) {
   return (
     <article className="product-card product-card--swap-hover">
@@ -300,14 +350,14 @@ function ProductCard({ product }) {
       }}
     >
       <div className="product-media">
-        <div className={`product-visual ${product.accent}`}>
-          <img
-            className="product-img active-img"
-            src={currentImage}
-            alt={product.name}
-          />
+        <div
+          className={`product-visual ${product.accent}${
+            product.brandedImage ? ' branded-visual' : ''
+          }`}
+        >
+          <img className="product-img active-img" src={currentImage} alt={product.name} />
           <span>{product.tag}</span>
-          <strong className="daiku-sticker">DAIKU</strong>
+          {!product.brandedImage && <strong className="daiku-sticker">DAIKU</strong>}
         </div>
 
         <div className={`product-view-tabs${isHovered ? ' is-visible' : ''}`}>
@@ -459,9 +509,13 @@ function App() {
           <a href="#top">See all products -&gt;</a>
         </div>
         <div className="product-grid">
-          {products.map((product) => (
-            <ProductCard product={product} key={product.name} />
-          ))}
+          {products.map((product) =>
+            product.cardStyle === 'wuber' ? (
+              <WuberStyleProductCard product={product} key={product.name} />
+            ) : (
+              <ProductCard product={product} key={product.name} />
+            ),
+          )}
         </div>
       </section>
 
